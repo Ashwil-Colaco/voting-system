@@ -6,5 +6,5 @@ compatibility_date = "2024-03-20"
 port = 8000
 [[d1_databases]]
 binding = "DB"
-database_name = "voting-system-db"
-database_id = "550e8400-e29b-41d4-a716-446655440000"
+database_name = "vote-system"
+database_id = "fdc3ad50-8fee-44ac-bc57-ad3ed620fb21"
