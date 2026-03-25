@@ -27,6 +27,15 @@ export default function App() {
   
   const totalStalls = 5;
 
+  const unlockStall = (id: string) => {
+    setUnlockedStalls(prev => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      localStorage.setItem('unlockedStalls', JSON.stringify(next));
+      return next;
+    });
+  };
+
   // Handle URL parameter on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -52,16 +61,8 @@ export default function App() {
     } else if (isLoggedIn) {
       setCurrentScreen('progress');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const unlockStall = (id: string) => {
-    setUnlockedStalls(prev => {
-      if (prev.includes(id)) return prev;
-      const next = [...prev, id];
-      localStorage.setItem('unlockedStalls', JSON.stringify(next));
-      return next;
-    });
-  };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -98,7 +99,7 @@ export default function App() {
         const url = new URL(decodedText);
         stallId = url.searchParams.get('stallId') || decodedText;
       }
-    } catch (e) {
+    } catch {
       // Not a URL, use as is
     }
 

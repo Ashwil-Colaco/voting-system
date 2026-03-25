@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { QrCode, X, Zap, Image as ImageIcon, ChevronLeft } from 'lucide-react';
+import { QrCode, X, Zap, ChevronLeft } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 interface ScannerScreenProps {
@@ -14,42 +14,60 @@ export default function ScannerScreen({ onScanSuccess, onClose }: ScannerScreenP
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    const scanner = new Html5Qrcode("reader");
-    scannerRef.current = scanner;
-
-    const startScanner = async () => {
+    let isUnmounted = false;
+    let html5QrCode: Html5Qrcode | null = null;
+    
+    // Slight delay to ensure DOM is ready and avoid strict-mode double mount race
+    const timer = setTimeout(async () => {
+      if (isUnmounted) return;
+      
       try {
-        await scanner.start(
+        html5QrCode = new Html5Qrcode("reader");
+        scannerRef.current = html5QrCode;
+        
+        await html5QrCode.start(
           { facingMode: "environment" },
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
           },
           (decodedText: string) => {
+            if (isUnmounted) return;
             // Success
             setIsScanning(false);
-            scanner.stop().then(() => {
+            if (html5QrCode && html5QrCode.isScanning) {
+              html5QrCode.stop().then(() => {
+                onScanSuccess(decodedText);
+              }).catch((err: unknown) => {
+                console.error("Failed to stop scanner", err);
+                onScanSuccess(decodedText);
+              });
+            } else {
               onScanSuccess(decodedText);
-            }).catch((err: unknown) => {
-              console.error("Failed to stop scanner", err);
-              onScanSuccess(decodedText); // Still proceed
-            });
+            }
           },
           () => {
             // parse error, ignore it.
           }
         );
+        
+        // In case it unmounted while initializing
+        if (isUnmounted && html5QrCode.isScanning) {
+          html5QrCode.stop().catch(console.error);
+        }
       } catch (err) {
-        console.error("Unable to start scanning", err);
-        setError("Camera access denied or not available. Please ensure you have granted camera permissions.");
+        if (!isUnmounted) {
+          console.error("Unable to start scanning", err);
+          setError("Camera access denied or not available. Please ensure you have granted camera permissions.");
+        }
       }
-    };
-
-    startScanner();
+    }, 100);
 
     return () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop().catch((err: unknown) => console.error("Cleanup stop failed", err));
+      isUnmounted = true;
+      clearTimeout(timer);
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch((err: unknown) => console.error("Cleanup stop failed", err));
       }
     };
   }, [onScanSuccess]);
@@ -79,10 +97,11 @@ export default function ScannerScreen({ onScanSuccess, onClose }: ScannerScreenP
       {/* Scanner Viewfinder */}
       <div className="flex-1 flex flex-col items-center justify-center relative">
         {/* Camera Feed Container */}
-        <div 
-          id="reader" 
-          className="absolute inset-0 bg-slate-900 overflow-hidden [&>video]:object-cover [&>video]:h-full [&>video]:w-full"
-        >
+        <div className="absolute inset-0 bg-slate-900 overflow-hidden">
+          <div 
+            id="reader" 
+            className="w-full h-full [&>video]:object-cover [&>video]:w-full [&>video]:h-full"
+          ></div>
           {error && (
             <div className="absolute inset-0 flex items-center justify-center p-8 text-center bg-slate-900 z-30">
               <div className="max-w-xs">
