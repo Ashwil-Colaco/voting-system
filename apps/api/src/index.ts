@@ -6,6 +6,7 @@ import voteRoutes from './routes/vote.route'
 import healthRoutes from './routes/health.route'
 import progressRoutes from './routes/progress.route'
 import stallsRoutes from './routes/stalls.route'
+import resultsRoutes from './routes/results.route'
 import userRoutes from './routes/user.route'
 import { cors } from 'hono/cors'
 
@@ -24,6 +25,7 @@ api.route('/vote', voteRoutes)
 api.route('/health', healthRoutes)
 api.route('/progress', progressRoutes)
 api.route('/stalls', stallsRoutes)
+api.route('/results', resultsRoutes)
 api.route('/user', userRoutes)
 
 export default {
