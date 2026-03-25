@@ -38,7 +38,7 @@ export const submitVote = async (
     if (progressCount >= 10) {
       await ormDb
         .update(users)
-        .set({ isCompleted: true })
+        .set({ completed: true })
         .where(eq(users.id, userId))
     }
 
