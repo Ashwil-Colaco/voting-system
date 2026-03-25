@@ -12,7 +12,8 @@ export const stalls = sqliteTable('stalls', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   description: text('description'),
-  logo: text('logo'), // ✅ added
+  logo: text('logo'),
+  qrSlug: text('qr_slug').unique().notNull(), // ✅ clean unique
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
