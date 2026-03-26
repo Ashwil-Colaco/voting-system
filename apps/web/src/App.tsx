@@ -62,7 +62,7 @@ export default function App() {
             const fetchedRatings: Record<string, number> = {};
             const fetchedStalls: Array<{stallId: number, stallName: string, rating: number}> = [];
             
-            progJson.ratings.forEach((r: any) => {
+            progJson.ratings.forEach((r: { stallId: number, stallName: string, rating: number }) => {
               fetchedRatings[r.stallId] = r.rating;
               fetchedStalls.push({ stallId: r.stallId, stallName: r.stallName, rating: r.rating });
             });
